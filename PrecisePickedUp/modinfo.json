@@ -1,0 +1,13 @@
+{
+    "type": "code",
+    "modid": "precisepickedup",
+    "name": "精确拾取",
+    "authors": [
+        "神麤詭末"
+    ],
+    "description": "允许空手时鼠标右键拾取掉落物，同时会显示掉落物的名称和数量。",
+    "version": "1.0.0",
+    "dependencies": {
+        "game": "1.19"
+    }
+}
