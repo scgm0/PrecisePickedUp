@@ -3,9 +3,11 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.Client.NoObf;
+using Vintagestory.GameContent;
 
 namespace PrecisePickedUp;
 
@@ -46,23 +48,21 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 		Vec3d hitPosition,
 		EnumInteractMode mode,
 		ref EnumHandling handled) {
-		if (entity.Api is ICoreServerAPI && byEntity is EntityPlayer player && mode == EnumInteractMode.Interact &&
-			(PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.OnlyRightHand &&
-				player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is null ||
-				PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.LeftOrRightHand &&
-				(player.Player.InventoryManager.GetHotbarItemstack(10) is null || player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is null) ||
-				PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.None)) {
-			var item = (EntityItem)entity;
-			if (player.Player.InventoryManager.TryGiveItemstack(item.Itemstack, true)) {
-				item.WatchedAttributes.SetInt("stackCount", item.Itemstack.StackSize);
-				if (item.Itemstack.StackSize <= 0) {
-					entity.Die(EnumDespawnReason.PickedUp);
-				}
-			}
+		if (entity.Api is not ICoreServerAPI || byEntity is not EntityPlayer player || mode != EnumInteractMode.Interact ||
+			PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.OnlyRightHand &&
+				player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null ||
+			PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.LeftOrRightHand &&
+				player.Player.InventoryManager.GetHotbarItemstack(10) is not null &&
+				player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null) return;
+		var collect = (EntityBehaviorCollectEntities)player.GetBehavior("collectitems");
+		collect.OnFoundCollectible(entity);
+		var item = (EntityItem)entity;
+		if (item.Itemstack is not { StackSize: > 0 }) {
+			item.WatchedAttributes.SetInt("stackCount", 0);
+			item.Die(EnumDespawnReason.PickedUp);
+		} else {
+			item.WatchedAttributes.SetInt("stackCount", item.Itemstack.StackSize);
 		}
-
-
-		handled = EnumHandling.PreventSubsequent;
 	}
 
 	public override WorldInteraction[] GetInteractionHelp(
@@ -73,7 +73,7 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 		return [
 			new() {
 				ActionLangCode = ActionLangCode,
-				RequireFreeHand = true,
+				RequireFreeHand = PrecisePickedUpModSystem.Config.PickupConditions != PickupConditionsEnum.None,
 				MouseButton = EnumMouseButton.Right
 			}
 		];

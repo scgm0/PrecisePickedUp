@@ -3,7 +3,6 @@ using HarmonyLib;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
-using Vintagestory.API.Server;
 using Vintagestory.Client.NoObf;
 
 [assembly: ModInfo(name: "精确拾取", modID: "precisepickedup", Authors = ["神麤詭末"], Description = "允许空手时鼠标右键拾取掉落物，同时会显示掉落物的名称和数量。")]
@@ -16,43 +15,38 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 			BindingFlags.NonPublic | BindingFlags.Instance);
 
 	static private readonly MethodInfo SystemMouseInWorldInteractionsUpdateCurrentSelectionEntityFilterPrefix =
-		typeof(SystemMouseInWorldInteractionsUpdateCurrentSelectionEntityFilterPrefix).GetMethod("Prefix");
+		typeof(SystemMouseInWorldInteractionsUpdateCurrentSelectionEntityFilterPatch).GetMethod("PreFix");
 
 	static private readonly MethodInfo EntityGetName = typeof(Entity).GetMethod(nameof(Entity.GetName));
 
 	static private readonly MethodInfo EntityGetNamePrefix =
-		typeof(EntityGetNamePrefix).GetMethod("Prefix");
+		typeof(EntityGetNamePatch).GetMethod("PreFix");
 
 	static private readonly MethodInfo BlockCanPlaceBlockActionConsumable =
 		typeof(Block).GetNestedType("<>c", BindingFlags.NonPublic)!.GetMethod("<CanPlaceBlock>b__124_0",
 			BindingFlags.NonPublic | BindingFlags.Instance);
 
 	static private readonly MethodInfo BlockCanPlaceBlockActionConsumablePrefix =
-		typeof(BlockCanPlaceBlockActionConsumablePrefix).GetMethod("Prefix");
+		typeof(BlockCanPlaceBlockActionConsumablePatch).GetMethod("PreFix");
 
 	static private readonly MethodInfo EntityItemCanCollect = typeof(EntityItem).GetMethod(nameof(EntityItem.CanCollect));
 
 	static private readonly MethodInfo EntityItemCanCollectPrefix =
-		typeof(EntityItemCanCollectPrefix).GetMethod("Prefix");
+		typeof(EntityItemCanCollectPatch).GetMethod("PreFix");
 
-	private ICoreAPI _api;
+	static private readonly MethodInfo EntityItemInitialize = typeof(EntityItem).GetMethod(nameof(EntityItem.Initialize));
+
+	static private readonly MethodInfo EntityItemInitializePosFix = typeof(EntityItemInitializePatch).GetMethod("PosFix");
+	
 	public string HarmonyId => Mod.Info.ModID;
 
 	public Harmony HarmonyInstance => new(HarmonyId);
 	public static Config Config { get; set; }
 
 	public override void Start(ICoreAPI api) {
-		_api = api;
-		api.Event.OnEntityLoaded += OnEntityLoaded;
-		api.Event.OnEntitySpawn += OnEntityLoaded;
-		switch (api) {
-			case ICoreServerAPI:
-				LoadConfig(api);
-				break;
-			case ICoreClientAPI client:
-				client.Event.LevelFinalize += () => LoadConfig(client);
-				break;
-		}
+		LoadConfig(api);
+		HarmonyInstance.Patch(original: EntityItemInitialize,
+			postfix: EntityItemInitializePosFix);
 	}
 
 	static private void LoadConfig(ICoreAPI api) {
@@ -84,8 +78,9 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 
 	public override void Dispose() {
 		base.Dispose();
-		_api.Event.OnEntityLoaded -= OnEntityLoaded;
-		_api.Event.OnEntitySpawn -= OnEntityLoaded;
+
+		HarmonyInstance.Unpatch(original: EntityItemInitialize,
+			patch: EntityItemInitializePosFix);
 
 		HarmonyInstance.Unpatch(original: EntityItemCanCollect,
 			patch: EntityItemCanCollectPrefix);
@@ -99,10 +94,5 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 		HarmonyInstance.Unpatch(
 			original: BlockCanPlaceBlockActionConsumable,
 			patch: BlockCanPlaceBlockActionConsumablePrefix);
-	}
-
-	static private void OnEntityLoaded(Entity entity) {
-		if (entity is not EntityItem entityItem) return;
-		entityItem.SidedProperties.Behaviors.Add(new EntityItemBehavior(entity));
 	}
 }
