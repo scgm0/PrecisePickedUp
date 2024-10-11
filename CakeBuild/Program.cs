@@ -3,8 +3,6 @@ using System.IO;
 using Cake.Common;
 using Cake.Common.IO;
 using Cake.Common.Tools.DotNet;
-using Cake.Common.Tools.DotNet.Clean;
-using Cake.Common.Tools.DotNet.Publish;
 using Cake.Core;
 using Cake.Frosting;
 using Cake.Json;
@@ -52,7 +50,7 @@ public sealed class ValidateJsonTask : FrostingTask<BuildContext> {
 				var json = File.ReadAllText(file.FullPath);
 				JToken.Parse(json);
 			} catch (JsonException ex) {
-				throw new Exception($"Validation failed for JSON file: {file.FullPath}{Environment.NewLine}{ex.Message}", ex);
+				throw new($"Validation failed for JSON file: {file.FullPath}{Environment.NewLine}{ex.Message}", ex);
 			}
 		}
 	}
@@ -63,13 +61,13 @@ public sealed class ValidateJsonTask : FrostingTask<BuildContext> {
 public sealed class BuildTask : FrostingTask<BuildContext> {
 	public override void Run(BuildContext context) {
 		context.DotNetClean($"../{BuildContext.ProjectName}/{BuildContext.ProjectName}.csproj",
-			new DotNetCleanSettings {
+			new() {
 				Configuration = context.BuildConfiguration
 			});
 
 
 		context.DotNetPublish($"../{BuildContext.ProjectName}/{BuildContext.ProjectName}.csproj",
-			new DotNetPublishSettings {
+			new() {
 				Configuration = context.BuildConfiguration
 			});
 	}

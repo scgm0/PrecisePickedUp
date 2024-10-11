@@ -5,8 +5,9 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 using Vintagestory.Common;
+using Vintagestory.GameContent;
 
-[assembly: ModInfo(name: "精确拾取", modID: "precisepickedup", Authors = ["神麤詭末"], Description = "允许空手时鼠标右键拾取掉落物，同时会显示掉落物的名称和数量。")]
+[assembly: ModInfo("精确拾取", "precisepickedup", Authors = ["神麤詭末"], Description = "允许空手时鼠标右键拾取掉落物，同时会显示掉落物的名称和数量。")]
 
 namespace PrecisePickedUp;
 
@@ -48,6 +49,12 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 	static private readonly MethodInfo EntityItemInitializePosFix =
 		AccessTools.Method(typeof(EntityItemInitializePatch), "PosFix");
 
+	static private readonly MethodInfo EntityProjectileInitialize =
+		AccessTools.Method(typeof(EntityProjectile), nameof(EntityItem.Initialize));
+
+	static private readonly MethodInfo EntityProjectileInitializePosFix =
+		AccessTools.Method(typeof(EntityProjectileInitializePatch), "PosFix");
+
 	public string HarmonyId => Mod.Info.ModID;
 
 	public Harmony HarmonyInstance => new(HarmonyId);
@@ -55,8 +62,10 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 
 	public override void Start(ICoreAPI api) {
 		LoadConfig(api);
-		HarmonyInstance.Patch(original: EntityItemInitialize,
+		HarmonyInstance.Patch(EntityItemInitialize,
 			postfix: EntityItemInitializePosFix);
+		HarmonyInstance.Patch(EntityProjectileInitialize,
+			postfix: EntityProjectileInitializePosFix);
 	}
 
 	static private void LoadConfig(ICoreAPI api) {
@@ -73,35 +82,38 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 		GameMainRayTraceForSelectionPatch.api = api;
 		api.RegisterEntityRendererClass("Item", typeof(MultiEntityItemRenderer));
 
-		HarmonyInstance.Patch(original: EntityItemCanCollect,
-			prefix: EntityItemCanCollectPreFix);
+		HarmonyInstance.Patch(EntityItemCanCollect,
+			EntityItemCanCollectPreFix);
 
-		HarmonyInstance.Patch(original: GameMainRayTraceForSelection,
-			prefix: GameMainRayTraceForSelectionPreFix);
+		HarmonyInstance.Patch(GameMainRayTraceForSelection,
+			GameMainRayTraceForSelectionPreFix);
 
-		HarmonyInstance.Patch(original: EntityGetName,
-			prefix: EntityGetNamePreFix);
+		HarmonyInstance.Patch(EntityGetName,
+			EntityGetNamePreFix);
 
-		HarmonyInstance.Patch(original: GameMainGetIntersectingEntities,
-			prefix: GameMainGetIntersectingEntitiesPreFix);
+		HarmonyInstance.Patch(GameMainGetIntersectingEntities,
+			GameMainGetIntersectingEntitiesPreFix);
 	}
 
 	public override void Dispose() {
 		base.Dispose();
 
-		HarmonyInstance.Unpatch(original: EntityItemInitialize,
-			patch: EntityItemInitializePosFix);
+		HarmonyInstance.Unpatch(EntityItemInitialize,
+			EntityItemInitializePosFix);
 
-		HarmonyInstance.Unpatch(original: EntityItemCanCollect,
-			patch: EntityItemCanCollectPreFix);
+		HarmonyInstance.Unpatch(EntityProjectileInitialize,
+			EntityProjectileInitializePosFix);
 
-		HarmonyInstance.Unpatch(original: GameMainRayTraceForSelection,
-			patch: GameMainRayTraceForSelectionPreFix);
+		HarmonyInstance.Unpatch(EntityItemCanCollect,
+			EntityItemCanCollectPreFix);
 
-		HarmonyInstance.Unpatch(original: EntityGetName,
-			patch: EntityGetNamePreFix);
+		HarmonyInstance.Unpatch(GameMainRayTraceForSelection,
+			GameMainRayTraceForSelectionPreFix);
 
-		HarmonyInstance.Unpatch(original: GameMainGetIntersectingEntities,
-			patch: GameMainGetIntersectingEntitiesPreFix);
+		HarmonyInstance.Unpatch(EntityGetName,
+			EntityGetNamePreFix);
+
+		HarmonyInstance.Unpatch(GameMainGetIntersectingEntities,
+			GameMainGetIntersectingEntitiesPreFix);
 	}
 }

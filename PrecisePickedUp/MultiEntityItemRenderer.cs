@@ -3,7 +3,6 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
-using Vintagestory.Client.NoObf;
 using Vintagestory.GameContent;
 
 namespace PrecisePickedUp;
@@ -297,6 +296,4 @@ public class MultiEntityItemRenderer : EntityItemRenderer {
 			-renderInfo.Transform.Origin.Y,
 			-renderInfo.Transform.Origin.Z);
 	}
-
-	public override void Dispose() { }
 }

@@ -4,7 +4,7 @@
         <TargetFramework>net7.0</TargetFramework>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
-        <LangVersion>latest</LangVersion>
+        <LangVersion>preview</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,9 +12,9 @@
             <HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
             <Private>false</Private>
         </Reference>
-        <Reference Include="0Harmony">
+        <Reference Include="Harmony">
             <HintPath>$(VINTAGE_STORY)/Lib/0Harmony.dll</HintPath>
-            <Private>False</Private>
+            <Private>false</Private>
         </Reference>
         <Reference Include="VintagestoryLib">
             <HintPath>$(VINTAGE_STORY)/VintagestoryLib.dll</HintPath>
@@ -22,7 +22,11 @@
         </Reference>
         <Reference Include="VSEssentials">
             <HintPath>$(VINTAGE_STORY)/Mods/VSEssentials.dll</HintPath>
-            <Private>False</Private>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="VSSurvivalMod">
+            <HintPath>$(VINTAGE_STORY)/Mods/VSSurvivalMod.dll</HintPath>
+            <Private>false</Private>
         </Reference>
     </ItemGroup>
 

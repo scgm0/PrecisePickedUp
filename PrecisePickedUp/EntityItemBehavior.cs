@@ -3,7 +3,6 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.Client.NoObf;
@@ -14,14 +13,14 @@ namespace PrecisePickedUp;
 public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 
 	static private readonly string ActionLangCode = Lang.Get($"precisepickedup:{nameof(EnumDespawnReason.PickedUp)}");
-	private float _cumulativeTime;
+	private float cumulativeTime;
 	public override string PropertyName() { return nameof(EntityItemBehavior); }
 
 	public override void OnGameTick(float deltaTime) {
 		if (!PrecisePickedUpModSystem.Config.AutoMerge || entity.Api is ICoreClientAPI) return;
-		_cumulativeTime += deltaTime;
-		if (_cumulativeTime < PrecisePickedUpModSystem.Config.MergeInterval) return;
-		_cumulativeTime = 0;
+		cumulativeTime += deltaTime;
+		if (cumulativeTime < PrecisePickedUpModSystem.Config.MergeInterval) return;
+		cumulativeTime = 0;
 		var item = (EntityItem)entity;
 		if (item.Slot.Itemstack == null || !item.Collided) return;
 		var quantity = item.Slot.Itemstack.Collectible.MaxStackSize - item.Slot.Itemstack.StackSize;
@@ -50,10 +49,10 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 		ref EnumHandling handled) {
 		if (entity.Api is not ICoreServerAPI || byEntity is not EntityPlayer player || mode != EnumInteractMode.Interact ||
 			PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.OnlyRightHand &&
-				player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null ||
+			player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null ||
 			PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.LeftOrRightHand &&
-				player.Player.InventoryManager.GetHotbarItemstack(10) is not null &&
-				player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null) return;
+			player.Player.InventoryManager.GetHotbarItemstack(10) is not null &&
+			player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null) return;
 		var collect = (EntityBehaviorCollectEntities)player.GetBehavior("collectitems");
 		collect.OnFoundCollectible(entity);
 		var item = (EntityItem)entity;
