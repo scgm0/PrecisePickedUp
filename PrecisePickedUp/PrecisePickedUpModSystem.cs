@@ -12,7 +12,7 @@ using Vintagestory.GameContent;
 namespace PrecisePickedUp;
 
 public sealed class PrecisePickedUpModSystem : ModSystem {
-	static private readonly MethodInfo GameMainRayTraceForSelection = AccessTools.Method(typeof(GameMain),
+	public static readonly MethodInfo GameMainRayTraceForSelection = AccessTools.Method(typeof(GameMain),
 		nameof(GameMain.RayTraceForSelection),
 		[
 			typeof(IWorldIntersectionSupplier),
@@ -23,59 +23,77 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 			typeof(EntityFilter)
 		]);
 
-	static private readonly MethodInfo GameMainRayTraceForSelectionPreFix =
+	public static readonly MethodInfo GameMainRayTraceForSelectionPreFix =
 		AccessTools.Method(typeof(GameMainRayTraceForSelectionPatch), "PreFix");
 
-	static private readonly MethodInfo GameMainGetIntersectingEntities =
+	public static readonly MethodInfo GameMainGetIntersectingEntities =
 		AccessTools.Method(typeof(GameMain), nameof(GameMain.GetIntersectingEntities));
 
-	static private readonly MethodInfo GameMainGetIntersectingEntitiesPreFix =
+	public static readonly MethodInfo GameMainGetIntersectingEntitiesPreFix =
 		AccessTools.Method(typeof(GameMainGetIntersectingEntitiesPatch), "PreFix");
 
-	static private readonly MethodInfo EntityGetName = AccessTools.Method(typeof(Entity), nameof(Entity.GetName));
+	public static readonly MethodInfo EntityGetName = AccessTools.Method(typeof(Entity), nameof(Entity.GetName));
 
-	static private readonly MethodInfo EntityGetNamePreFix =
+	public static readonly MethodInfo EntityGetNamePreFix =
 		AccessTools.Method(typeof(EntityGetNamePatch), "PreFix");
 
-	static private readonly MethodInfo EntityItemCanCollect =
+	public static readonly MethodInfo EntityItemCanCollect =
 		AccessTools.Method(typeof(EntityItem), nameof(EntityItem.CanCollect));
 
-	static private readonly MethodInfo EntityItemCanCollectPreFix =
+	public static readonly MethodInfo EntityItemCanCollectPreFix =
 		AccessTools.Method(typeof(EntityItemCanCollectPatch), "PreFix");
 
-	static private readonly MethodInfo EntityItemInitialize =
+	public static readonly MethodInfo EntityItemInitialize =
 		AccessTools.Method(typeof(EntityItem), nameof(EntityItem.Initialize));
 
-	static private readonly MethodInfo EntityItemInitializePosFix =
+	public static readonly MethodInfo EntityItemInitializePosFix =
 		AccessTools.Method(typeof(EntityItemInitializePatch), "PosFix");
 
-	static private readonly MethodInfo EntityProjectileInitialize =
-		AccessTools.Method(typeof(EntityProjectile), nameof(EntityItem.Initialize));
+	public static readonly MethodInfo EntityProjectileInitialize =
+		AccessTools.Method(typeof(EntityProjectile), nameof(EntityProjectile.Initialize));
 
-	static private readonly MethodInfo EntityProjectileInitializePosFix =
-		AccessTools.Method(typeof(EntityProjectileInitializePatch), "PosFix");
+	public static readonly MethodInfo EntityProjectileInitializePosFix =
+		AccessTools.Method(typeof(ProjectileInitializePatch), "PosFix");
 
 	public string HarmonyId => Mod.Info.ModID;
 
 	public Harmony HarmonyInstance => new(HarmonyId);
+
 	public static Config Config { get; private set; }
 
-	public override void Start(ICoreAPI api) {
-		LoadConfig(api);
+	public static ICoreAPI? Api { get; private set; }
+
+	public static bool EnableOverhaulCompat => Api?.ModLoader.IsModEnabled("overhaullib") ?? false;
+
+	public static PrecisePickedUpModSystem? Instance { get; private set; }
+
+	public PrecisePickedUpModSystem() {
+		Instance = this;
+	}
+
+	public override void Start(ICoreAPI? api) {
+		Api = api;
+		LoadConfig();
+		if (EnableOverhaulCompat) {
+			OverhaulCompat.Patch();
+		}
+
 		HarmonyInstance.Patch(EntityItemInitialize,
 			postfix: EntityItemInitializePosFix);
 		HarmonyInstance.Patch(EntityProjectileInitialize,
 			postfix: EntityProjectileInitializePosFix);
 	}
 
-	static private void LoadConfig(ICoreAPI api) {
+	static private void LoadConfig() {
 		try {
-			Config = api.LoadModConfig<Config?>("PrecisePickedUp.json") ?? new Config();
+			if (Api != null) {
+				Config = Api.LoadModConfig<Config?>("PrecisePickedUp.json") ?? new Config();
+			}
 		} catch {
 			Config = new();
 		}
 
-		api.StoreModConfig(Config, "PrecisePickedUp.json");
+		Api?.StoreModConfig(Config, "PrecisePickedUp.json");
 	}
 
 	public override void StartClientSide(ICoreClientAPI api) {
@@ -97,6 +115,10 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 
 	public override void Dispose() {
 		base.Dispose();
+
+		if (EnableOverhaulCompat) {
+			OverhaulCompat.Unpatch();
+		}
 
 		HarmonyInstance.Unpatch(EntityItemInitialize,
 			EntityItemInitializePosFix);

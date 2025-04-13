@@ -1,10 +1,13 @@
 using System.Text;
+using HarmonyLib;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
+using Vintagestory.Client.NoObf;
 using Vintagestory.GameContent;
 
 namespace PrecisePickedUp;
@@ -43,5 +46,16 @@ public class EntityProjectileBehavior(Entity entity) : EntityBehavior(entity) {
 				MouseButton = EnumMouseButton.Right
 			}
 		];
+	}
+
+	public override void GetInfoText(StringBuilder infotext) {
+		if (!PrecisePickedUpModSystem.Config.ShowItemDescription) return;
+		if (PrecisePickedUpModSystem.EnableOverhaulCompat) {
+			OverhaulCompat.GetInfoText(entity, infotext);
+		}
+
+		if (entity is not EntityProjectile projectile) return;
+		var stack = projectile.ProjectileStack!;
+		stack.Item.GetHeldItemInfo(new DummySlot(stack), infotext, entity.Api.World, ClientSettings.ExtendedDebugInfo);
 	}
 }
