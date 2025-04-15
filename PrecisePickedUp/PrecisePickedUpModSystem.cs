@@ -93,6 +93,8 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 			Config = new();
 		}
 
+		Config = Config with { PickupRange = Config.MergeRange ?? new Vec2f(1.5f, 0.2f) };
+		Config = Config with { PickupRange = Config.PickupRange ?? new Vec2f(1, 0.2f) };
 		Api?.StoreModConfig(Config, "PrecisePickedUp.json");
 	}
 

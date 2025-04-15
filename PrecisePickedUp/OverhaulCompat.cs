@@ -2,10 +2,8 @@ using System.Reflection;
 using System.Text;
 using CombatOverhaul.RangedSystems;
 using HarmonyLib;
-using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
-using Vintagestory.API.Datastructures;
 using Vintagestory.Client.NoObf;
 
 namespace PrecisePickedUp;
@@ -44,4 +42,8 @@ public class OverhaulCompat {
 	}
 
 	public static bool RayTraceForSelection(Entity entity) { return entity is ProjectileEntity; }
+
+	public static Item? GetProjectileItem(Entity entity) {
+		return entity is not ProjectileEntity projectile ? null : projectile.ProjectileStack?.Item;
+	}
 }

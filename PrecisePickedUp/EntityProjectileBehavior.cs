@@ -1,10 +1,8 @@
 using System.Text;
-using HarmonyLib;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.Client.NoObf;
@@ -30,6 +28,24 @@ public class EntityProjectileBehavior(Entity entity) : EntityBehavior(entity) {
 			PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.LeftOrRightHand &&
 			player.Player.InventoryManager.GetHotbarItemstack(10) is not null &&
 			player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null) return;
+
+		OnCollideWithPlayer(player);
+
+		if (!PrecisePickedUpModSystem.Config.RangePickup) return;
+		var item = entity is EntityProjectile projectile ? projectile.ProjectileStack.Item : OverhaulCompat.GetProjectileItem(entity);
+		var entities = entity.Api.World.GetEntitiesAround(entity.Pos.XYZ,
+			PrecisePickedUpModSystem.Config.PickupRange.X,
+			PrecisePickedUpModSystem.Config.PickupRange.Y,
+			e => {
+				var i2 = e is EntityProjectile p2 ? p2.ProjectileStack.Item : OverhaulCompat.GetProjectileItem(e);
+				return item is not null && i2 is not null && item == i2;
+			});
+		foreach (var entity1 in entities) {
+			entity1.GetBehavior<EntityProjectileBehavior>()?.OnCollideWithPlayer(player);
+		}
+	}
+
+	public void OnCollideWithPlayer(EntityPlayer player) {
 		var collect = (EntityBehaviorCollectEntities)player.GetBehavior("collectitems");
 		collect.OnFoundCollectible(entity);
 	}

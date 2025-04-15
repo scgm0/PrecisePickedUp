@@ -53,6 +53,20 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 			PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.LeftOrRightHand &&
 			player.Player.InventoryManager.GetHotbarItemstack(10) is not null &&
 			player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null) return;
+		OnCollideWithPlayer(player);
+
+		if (!PrecisePickedUpModSystem.Config.RangePickup) return;
+		var item = ((EntityItem)entity).Itemstack.Item;
+		var entities = entity.Api.World.GetEntitiesAround(entity.Pos.XYZ,
+			PrecisePickedUpModSystem.Config.PickupRange.X,
+			PrecisePickedUpModSystem.Config.PickupRange.Y,
+			e => e is EntityItem entityItem && entityItem.Itemstack.Item == item);
+		foreach (var entity1 in entities) {
+			entity1.GetBehavior<EntityItemBehavior>()?.OnCollideWithPlayer(player);
+		}
+	}
+
+	public void OnCollideWithPlayer(EntityPlayer player) {
 		var collect = (EntityBehaviorCollectEntities)player.GetBehavior("collectitems");
 		collect.OnFoundCollectible(entity);
 		var item = (EntityItem)entity;
