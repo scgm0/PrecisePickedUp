@@ -142,15 +142,15 @@ public class MultiEntityItemRenderer : EntityItemRenderer {
 					itemStackRenderInfo.OverlayTexture.Height);
 				standardShaderProgram.BaseTextureSize = new(itemStackRenderInfo.TextureSize.Width,
 					itemStackRenderInfo.TextureSize.Height);
-				var textureAtlasPosition = render.GetTextureAtlasPosition(entityItem.Itemstack);
+				var textureAtlasPosition = render.GetTextureAtlasPosition(entityItem.Slot.Itemstack);
 				standardShaderProgram.BaseUvOrigin = new(textureAtlasPosition.x1, textureAtlasPosition.y1);
 			}
 
 			var asBlockPos = entityItem.Pos.AsBlockPos;
 			var lightRgBs = capi.World.BlockAccessor.GetLightRGBs(asBlockPos.X, asBlockPos.Y, asBlockPos.Z);
 			var temperature =
-				(int)entityItem.Itemstack.Collectible.GetTemperature(capi.World,
-					entityItem.Itemstack);
+				(int)entityItem.Slot.Itemstack.Collectible.GetTemperature(capi.World,
+					entityItem.Slot.Itemstack);
 			var incandescenceColorAsColor4F = ColorUtil.GetIncandescenceColorAsColor4f(temperature);
 			var num = GameMath.Clamp((temperature - 550) / 2, 0, byte.MaxValue);
 			glowRgb.R = incandescenceColorAsColor4F[0];
@@ -169,7 +169,7 @@ public class MultiEntityItemRenderer : EntityItemRenderer {
 			standardShaderProgram.ProjectionMatrix = render.CurrentProjectionMatrix;
 			standardShaderProgram.ViewMatrix = render.CameraMatrixOriginf;
 			standardShaderProgram.ModelMatrix = ModelMat;
-			var itemStack = entityItem.Itemstack;
+			var itemStack = entityItem.Slot.Itemstack;
 			var particleProperties = itemStack.Block?.ParticleProperties;
 			if (itemStack.Block != null && !capi.IsGamePaused) {
 				Mat4f.MulWithVec4(ModelMat,
@@ -196,9 +196,10 @@ public class MultiEntityItemRenderer : EntityItemRenderer {
 		render.RenderMultiTextureMesh(itemStackRenderInfo.ModelRef, textureSampleName);
 		if (stackCount > 1) {
 			var output = Mat4f.Create();
+			var radius = (float)entityItem.FrustumSphereRadius * 0.1f;
 			for (var i = 0; i < Math.Min(stackCount - 1, 9); i++) {
-				Mat4f.Translate(output, ModelMat, XOffsets[i], YOffsets[i], ZOffsets[i]);
-				Mat4f.RotateY(output, output, XOffsets[i] / 4);
+				Mat4f.Translate(output, ModelMat, XOffsets[i] * radius , YOffsets[i] * radius, ZOffsets[i] * radius);
+				Mat4f.RotateY(output, output, XOffsets[i] / 4 * radius);
 				if (!isShadowPass) {
 					standardShaderProgram.ModelMatrix = output;
 				} else {
