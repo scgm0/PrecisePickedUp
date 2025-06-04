@@ -74,12 +74,9 @@ public class MultiEntityItemRenderer : EntityItemRenderer {
 	}
 
 	public override void DoRender3DOpaque(float dt, bool isShadowPass) {
-		var stackCount = entityItem.WatchedAttributes.GetInt("stackCount", entityItem.Itemstack.StackSize);
-		if (entityItem.Itemstack.StackSize != stackCount) {
-			entityItem.Itemstack.StackSize = stackCount;
-		}
+		var stackCount = entityItem.WatchedAttributes.GetInt("stackCount", inslot.Itemstack?.StackSize ?? 0);
 
-		if (stackCount == 0) {
+		if (stackCount <= 0) {
 			return;
 		}
 

@@ -17,7 +17,12 @@ public static class EntityGetNamePatch {
 
 		switch (__instance) {
 			case EntityItem item:
-				__result = item.Itemstack.StackSize > 1 ? $"{item.Itemstack.GetName()} ({item.WatchedAttributes.GetInt("stackCount", item.Itemstack.StackSize)}x)" : item.Itemstack.GetName();
+				var size = item.WatchedAttributes.GetInt("stackCount", item.Slot.Itemstack.StackSize);
+				if (item.Slot.Itemstack.StackSize != size) {
+					item.Slot.Itemstack.StackSize = size;
+				}
+
+				__result = size > 1 ? $"{item.Slot.Itemstack.GetName()} ({size}x)" : item.Slot.Itemstack.GetName();
 				return false;
 			case EntityProjectile projectile:
 				var stack = projectile.ProjectileStack;

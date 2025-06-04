@@ -17,14 +17,29 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 	public override string PropertyName() { return nameof(EntityItemBehavior); }
 
 	public override void OnGameTick(float deltaTime) {
-		if (!PrecisePickedUpModSystem.Config.AutoMerge || entity.Api is ICoreClientAPI) return;
+		if (!PrecisePickedUpModSystem.Config.AutoMerge || entity.Api is ICoreClientAPI) {
+			return;
+		}
+
 		cumulativeTime += deltaTime;
 		if (cumulativeTime < PrecisePickedUpModSystem.Config.MergeInterval) return;
 		cumulativeTime = 0;
 		var item = (EntityItem)entity;
-		if (item.Slot.Itemstack == null || !item.Collided) return;
+		if (item.Slot.Itemstack == null || !item.Collided) {
+			return;
+		}
+
+		if (item.Slot.Itemstack.StackSize <= 0) {
+			item.Die(EnumDespawnReason.Expire);
+			item.WatchedAttributes.SetInt("stackCount", 0);
+			return;
+		}
+
 		var quantity = item.Slot.Itemstack.Collectible.MaxStackSize - item.Slot.Itemstack.StackSize;
-		if (quantity <= 0) return;
+		if (quantity <= 0) {
+			return;
+		}
+
 		foreach (var entity1 in item.Api.World.GetEntitiesAround(item.SidedPos.XYZ,
 			PrecisePickedUpModSystem.Config.MergeRange.X,
 			PrecisePickedUpModSystem.Config.MergeRange.Y,
@@ -33,11 +48,15 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 			} && slot.StackSize <= item.Slot.StackSize && e != item)) {
 			var entityItem = (EntityItem)entity1;
 			quantity -= entityItem.Slot.TryPutInto(item.Api.World, item.Slot, quantity);
-			item.WatchedAttributes.SetInt("stackCount", item.Itemstack.StackSize);
-			if (entityItem.Slot.Itemstack == null)
+			item.WatchedAttributes.SetInt("stackCount", item.Slot.Itemstack.StackSize);
+			if (entityItem.Slot.Itemstack is not { StackSize: > 0 }) {
 				entityItem.Die(EnumDespawnReason.Expire);
-			if (quantity <= 0)
+				entityItem.WatchedAttributes.SetInt("stackCount", 0);
+			}
+
+			if (quantity <= 0) {
 				break;
+			}
 		}
 	}
 
@@ -52,15 +71,21 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 			player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null ||
 			PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.LeftOrRightHand &&
 			player.Player.InventoryManager.GetHotbarItemstack(10) is not null &&
-			player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null) return;
+			player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null) {
+			return;
+		}
+
 		OnCollideWithPlayer(player);
 
-		if (!PrecisePickedUpModSystem.Config.RangePickup) return;
-		var item = ((EntityItem)entity).Itemstack.Item;
+		if (!PrecisePickedUpModSystem.Config.RangePickup) {
+			return;
+		}
+
+		var item = ((EntityItem)entity).Slot.Itemstack.Item;
 		var entities = entity.Api.World.GetEntitiesAround(entity.Pos.XYZ,
 			PrecisePickedUpModSystem.Config.PickupRange.X,
 			PrecisePickedUpModSystem.Config.PickupRange.Y,
-			e => e is EntityItem entityItem && entityItem.Itemstack.Item == item);
+			e => e is EntityItem entityItem && entityItem.Slot.Itemstack.Item == item);
 		foreach (var entity1 in entities) {
 			entity1.GetBehavior<EntityItemBehavior>()?.OnCollideWithPlayer(player);
 		}
@@ -70,11 +95,11 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 		var collect = (EntityBehaviorCollectEntities)player.GetBehavior("collectitems");
 		collect.OnFoundCollectible(entity);
 		var item = (EntityItem)entity;
-		if (item.Itemstack is not { StackSize: > 0 }) {
+		if (item.Slot.Itemstack is not { StackSize: > 0 }) {
 			item.WatchedAttributes.SetInt("stackCount", 0);
 			item.Die(EnumDespawnReason.PickedUp);
 		} else {
-			item.WatchedAttributes.SetInt("stackCount", item.Itemstack.StackSize);
+			item.WatchedAttributes.SetInt("stackCount", item.Slot.Itemstack.StackSize);
 		}
 	}
 
