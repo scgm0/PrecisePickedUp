@@ -22,7 +22,10 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 		}
 
 		cumulativeTime += deltaTime;
-		if (cumulativeTime < PrecisePickedUpModSystem.Config.MergeInterval) return;
+		if (cumulativeTime < PrecisePickedUpModSystem.Config.MergeInterval) {
+			return;
+		}
+
 		cumulativeTime = 0;
 		var item = (EntityItem)entity;
 		if (item.Slot.Itemstack == null || !item.Collided) {
@@ -81,11 +84,11 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 			return;
 		}
 
-		var item = ((EntityItem)entity).Slot.Itemstack.Item;
+		var itemStack = ((EntityItem)entity).Slot.Itemstack;
 		var entities = entity.Api.World.GetEntitiesAround(entity.Pos.XYZ,
 			PrecisePickedUpModSystem.Config.PickupRange.X,
 			PrecisePickedUpModSystem.Config.PickupRange.Y,
-			e => e is EntityItem entityItem && entityItem.Slot.Itemstack.Item == item);
+			e => e is EntityItem entityItem && itemStack.Equals(entity.World, entityItem.Slot.Itemstack));
 		foreach (var entity1 in entities) {
 			entity1.GetBehavior<EntityItemBehavior>()?.OnCollideWithPlayer(player);
 		}
@@ -118,7 +121,10 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 	}
 
 	public override void GetInfoText(StringBuilder infotext) {
-		if (!PrecisePickedUpModSystem.Config.ShowItemDescription) return;
+		if (!PrecisePickedUpModSystem.Config.ShowItemDescription) {
+			return;
+		}
+
 		var item = (EntityItem)entity;
 		infotext.Append(item.Slot.GetStackDescription((IClientWorldAccessor)item.World, ClientSettings.ExtendedDebugInfo));
 	}

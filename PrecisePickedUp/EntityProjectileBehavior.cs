@@ -27,18 +27,25 @@ public class EntityProjectileBehavior(Entity entity) : EntityBehavior(entity) {
 			player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null ||
 			PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.LeftOrRightHand &&
 			player.Player.InventoryManager.GetHotbarItemstack(10) is not null &&
-			player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null) return;
+			player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null) {
+			return;
+		}
 
 		OnCollideWithPlayer(player);
 
-		if (!PrecisePickedUpModSystem.Config.RangePickup) return;
-		var item = entity is EntityProjectile projectile ? projectile.ProjectileStack.Item : OverhaulCompat.GetProjectileItem(entity);
+		if (!PrecisePickedUpModSystem.Config.RangePickup) {
+			return;
+		}
+
+		var itemStack = entity is EntityProjectile projectile
+			? projectile.ProjectileStack
+			: OverhaulCompat.GetProjectileItemStack(entity);
 		var entities = entity.Api.World.GetEntitiesAround(entity.Pos.XYZ,
 			PrecisePickedUpModSystem.Config.PickupRange.X,
 			PrecisePickedUpModSystem.Config.PickupRange.Y,
 			e => {
-				var i2 = e is EntityProjectile p2 ? p2.ProjectileStack.Item : OverhaulCompat.GetProjectileItem(e);
-				return item is not null && i2 is not null && item == i2;
+				var i2 = e is EntityProjectile p2 ? p2.ProjectileStack : OverhaulCompat.GetProjectileItemStack(e);
+				return itemStack is not null && i2 is not null && itemStack.Equals(entity.World, i2);
 			});
 		foreach (var entity1 in entities) {
 			entity1.GetBehavior<EntityProjectileBehavior>()?.OnCollideWithPlayer(player);
@@ -65,12 +72,18 @@ public class EntityProjectileBehavior(Entity entity) : EntityBehavior(entity) {
 	}
 
 	public override void GetInfoText(StringBuilder infotext) {
-		if (!PrecisePickedUpModSystem.Config.ShowItemDescription) return;
+		if (!PrecisePickedUpModSystem.Config.ShowItemDescription) {
+			return;
+		}
+
 		if (PrecisePickedUpModSystem.EnableOverhaulCompat) {
 			OverhaulCompat.GetInfoText(entity, infotext);
 		}
 
-		if (entity is not EntityProjectile projectile) return;
+		if (entity is not EntityProjectile projectile) {
+			return;
+		}
+
 		var stack = projectile.ProjectileStack!;
 		stack.Item.GetHeldItemInfo(new DummySlot(stack), infotext, entity.Api.World, ClientSettings.ExtendedDebugInfo);
 	}

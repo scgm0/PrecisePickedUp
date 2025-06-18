@@ -8,7 +8,7 @@ using Vintagestory.Client.NoObf;
 
 namespace PrecisePickedUp;
 
-public class OverhaulCompat {
+public static class OverhaulCompat {
 	static private readonly MethodInfo ProjectileEntityInitialize =
 		AccessTools.Method(typeof(ProjectileEntity), nameof(ProjectileEntity.Initialize));
 
@@ -23,7 +23,10 @@ public class OverhaulCompat {
 	}
 
 	public static bool EntityGetName(Entity entity, ref string s) {
-		if (entity is not ProjectileEntity projectile) return false;
+		if (entity is not ProjectileEntity projectile) {
+			return false;
+		}
+
 		var stack = projectile.ProjectileStack!;
 		if (stack.Item is null) {
 			var item = entity.Api.World.GetItem(stack.Id);
@@ -36,14 +39,17 @@ public class OverhaulCompat {
 	}
 
 	public static void GetInfoText(Entity entity, StringBuilder infotext) {
-		if (entity is not ProjectileEntity projectile) return;
+		if (entity is not ProjectileEntity projectile) {
+			return;
+		}
+
 		var stack = projectile.ProjectileStack!;
 		stack.Item.GetHeldItemInfo(new DummySlot(stack), infotext, entity.Api.World, ClientSettings.ExtendedDebugInfo);
 	}
 
 	public static bool RayTraceForSelection(Entity entity) { return entity is ProjectileEntity; }
 
-	public static Item? GetProjectileItem(Entity entity) {
-		return entity is not ProjectileEntity projectile ? null : projectile.ProjectileStack?.Item;
+	public static ItemStack? GetProjectileItemStack(Entity entity) {
+		return entity is not ProjectileEntity projectile ? null : projectile.ProjectileStack;
 	}
 }

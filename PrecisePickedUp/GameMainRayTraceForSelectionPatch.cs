@@ -10,7 +10,10 @@ public class GameMainRayTraceForSelectionPatch {
 
 	[HarmonyPriority(Priority.First)]
 	public static void PreFix(ref EntityFilter efilter) {
-		if (efilter is null || !efilter.Method.Name.StartsWith("<UpdateCurrentSelection>")) return;
+		if (efilter is null || !efilter.Method.Name.StartsWith("<UpdateCurrentSelection>")) {
+			return;
+		}
+
 		var oldFilter = efilter;
 		efilter = e => e is EntityItem or EntityProjectile ||
 			PrecisePickedUpModSystem.EnableOverhaulCompat && OverhaulCompat.RayTraceForSelection(e) ||
