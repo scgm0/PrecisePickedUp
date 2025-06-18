@@ -55,6 +55,12 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 	public static readonly MethodInfo EntityProjectileInitializePosFix =
 		AccessTools.Method(typeof(ProjectileInitializePatch), "PosFix");
 
+	public static readonly MethodInfo DoRender3DOpaque =
+		AccessTools.Method(typeof(EntityItemRenderer), nameof(EntityItemRenderer.DoRender3DOpaque));
+
+	public static readonly MethodInfo DoRender3DOpaquePreFix =
+		AccessTools.Method(typeof(EntityItemRendererPatch), nameof(EntityItemRendererPatch.DoRender3DOpaquePreFix));
+
 	public string HarmonyId => Mod.Info.ModID;
 
 	public Harmony HarmonyInstance => new(HarmonyId);
@@ -67,9 +73,7 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 
 	public static PrecisePickedUpModSystem? Instance { get; private set; }
 
-	public PrecisePickedUpModSystem() {
-		Instance = this;
-	}
+	public PrecisePickedUpModSystem() { Instance = this; }
 
 	public override void Start(ICoreAPI? api) {
 		Api = api;
@@ -100,7 +104,6 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 
 	public override void StartClientSide(ICoreClientAPI api) {
 		GameMainRayTraceForSelectionPatch.api = api;
-		api.RegisterEntityRendererClass("Item", typeof(MultiEntityItemRenderer));
 
 		HarmonyInstance.Patch(EntityItemCanCollect,
 			EntityItemCanCollectPreFix);
@@ -113,6 +116,9 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 
 		HarmonyInstance.Patch(GameMainGetIntersectingEntities,
 			GameMainGetIntersectingEntitiesPreFix);
+
+		HarmonyInstance.Patch(DoRender3DOpaque,
+			DoRender3DOpaquePreFix);
 	}
 
 	public override void Dispose() {
@@ -139,5 +145,8 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 
 		HarmonyInstance.Unpatch(GameMainGetIntersectingEntities,
 			GameMainGetIntersectingEntitiesPreFix);
+
+		HarmonyInstance.Unpatch(DoRender3DOpaque,
+			DoRender3DOpaquePreFix);
 	}
 }
