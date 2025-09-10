@@ -61,6 +61,18 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 	public static readonly MethodInfo DoRender3DOpaquePreFix =
 		AccessTools.Method(typeof(EntityItemRendererPatch), nameof(EntityItemRendererPatch.DoRender3DOpaquePreFix));
 
+	public static readonly MethodInfo ProjectileNonCollectibleGet =
+		AccessTools.PropertyGetter(typeof(EntityProjectile), nameof(EntityProjectile.NonCollectible));
+
+	public static readonly MethodInfo ProjectileNonCollectibleGetPreFix =
+		AccessTools.Method(typeof(ProjectileNonCollectiblePatch), nameof(ProjectileNonCollectiblePatch.GetPreFix));
+
+	public static readonly MethodInfo ProjectileNonCollectibleSet =
+		AccessTools.PropertySetter(typeof(EntityProjectile), nameof(EntityProjectile.NonCollectible));
+
+	public static readonly MethodInfo ProjectileNonCollectibleSetPreFix =
+		AccessTools.Method(typeof(ProjectileNonCollectiblePatch), nameof(ProjectileNonCollectiblePatch.SetPreFix));
+
 	public string HarmonyId => Mod.Info.ModID;
 
 	public Harmony HarmonyInstance => new(HarmonyId);
@@ -86,6 +98,10 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 			postfix: EntityItemInitializePosFix);
 		HarmonyInstance.Patch(EntityProjectileInitialize,
 			postfix: EntityProjectileInitializePosFix);
+		HarmonyInstance.Patch(ProjectileNonCollectibleGet,
+			prefix: ProjectileNonCollectibleGetPreFix);
+		HarmonyInstance.Patch(ProjectileNonCollectibleSet,
+			prefix: ProjectileNonCollectibleSetPreFix);
 	}
 
 	static private void LoadConfig() {
@@ -148,5 +164,11 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 
 		HarmonyInstance.Unpatch(DoRender3DOpaque,
 			DoRender3DOpaquePreFix);
+
+		HarmonyInstance.Unpatch(ProjectileNonCollectibleGet,
+			ProjectileNonCollectibleGetPreFix);
+
+		HarmonyInstance.Unpatch(ProjectileNonCollectibleSet,
+			ProjectileNonCollectibleSetPreFix);
 	}
 }

@@ -2,7 +2,6 @@ using System.Reflection;
 using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
-using Vintagestory.API.Config;
 using Vintagestory.GameContent;
 
 namespace PrecisePickedUp;

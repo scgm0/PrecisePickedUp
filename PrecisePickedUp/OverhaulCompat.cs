@@ -23,14 +23,14 @@ public static class OverhaulCompat {
 	}
 
 	public static bool EntityGetName(Entity entity, ref string s) {
-		if (entity is not ProjectileEntity projectile) {
+		if (entity is not ProjectileEntity { CanBeCollected: true } projectile) {
 			return false;
 		}
 
 		var stack = projectile.ProjectileStack!;
 		if (stack.Item is null) {
-			var item = entity.Api.World.GetItem(stack.Id);
-			AccessTools.Field(typeof(ItemStack), "item").SetValue(stack, item);
+			ref var item = ref UnsafeAccessorExtensions.GetItemStack_item(stack);
+			item = entity.Api.World.GetItem(stack.Id);
 		}
 
 		s = stack.Item!.GetHeldItemName(stack);
@@ -39,17 +39,39 @@ public static class OverhaulCompat {
 	}
 
 	public static void GetInfoText(Entity entity, StringBuilder infotext) {
-		if (entity is not ProjectileEntity projectile) {
+		if (entity is not ProjectileEntity { CanBeCollected: true } projectile) {
 			return;
 		}
 
 		var stack = projectile.ProjectileStack!;
-		stack.Item.GetHeldItemInfo(new DummySlot(stack), infotext, entity.Api.World, ClientSettings.ExtendedDebugInfo);
+		if (stack.Item is null) {
+			ref var item = ref UnsafeAccessorExtensions.GetItemStack_item(stack);
+			item = entity.Api.World.GetItem(stack.Id);
+		}
+
+		stack.Item!.GetHeldItemInfo(new DummySlot(stack), infotext, entity.Api.World, ClientSettings.ExtendedDebugInfo);
 	}
 
-	public static bool RayTraceForSelection(Entity entity) { return entity is ProjectileEntity; }
+	public static bool RayTraceForSelection(Entity entity) { return entity is ProjectileEntity { CanBeCollected: true }; }
 
 	public static ItemStack? GetProjectileItemStack(Entity entity) {
 		return entity is not ProjectileEntity projectile ? null : projectile.ProjectileStack;
+	}
+
+	public static bool NotCollect(Entity entity) {
+		if (entity is not ProjectileEntity projectileEntity) {
+			return false;
+		}
+
+		var stack = projectileEntity.ProjectileStack!;
+		if (stack.Item is null) {
+			ref var item = ref UnsafeAccessorExtensions.GetItemStack_item(stack);
+			item = entity.Api.World.GetItem(stack.Id);
+		}
+
+		var stats = stack.Item!.GetCollectibleBehavior<ProjectileBehavior>(true).GetStats(stack);
+		projectileEntity.CanBeCollected = stats.CanBeCollected;
+
+		return !projectileEntity.CanBeCollected;
 	}
 }

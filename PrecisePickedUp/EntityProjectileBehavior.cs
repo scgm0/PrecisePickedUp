@@ -44,7 +44,13 @@ public class EntityProjectileBehavior(Entity entity) : EntityBehavior(entity) {
 			PrecisePickedUpModSystem.Config.PickupRange.X,
 			PrecisePickedUpModSystem.Config.PickupRange.Y,
 			e => {
-				var i2 = e is EntityProjectile p2 ? p2.ProjectileStack : OverhaulCompat.GetProjectileItemStack(e);
+				ItemStack? i2 = null;
+				if (e is EntityProjectile p2) {
+					i2 = p2.ProjectileStack;
+				} else if (PrecisePickedUpModSystem.EnableOverhaulCompat) {
+					i2 = OverhaulCompat.GetProjectileItemStack(e);
+				}
+
 				return itemStack is not null && i2 is not null && itemStack.Equals(entity.World, i2);
 			});
 		foreach (var entity1 in entities) {
@@ -53,8 +59,8 @@ public class EntityProjectileBehavior(Entity entity) : EntityBehavior(entity) {
 	}
 
 	public void OnCollideWithPlayer(EntityPlayer player) {
-		var collect = (EntityBehaviorCollectEntities)player.GetBehavior("collectitems");
-		collect.OnFoundCollectible(entity);
+		var collect = player.GetBehavior("collectitems") as EntityBehaviorCollectEntities;
+		collect?.OnFoundCollectible(entity);
 	}
 
 	public override WorldInteraction[] GetInteractionHelp(
