@@ -10,10 +10,13 @@
 配置文件：`VintagestoryData/ModConfig/PrecisePickedUp.json`
 ```
 {
+  // 客户端配置：
+  "ShowItemDescription": true, // 显示物品介绍
+
+  // 服务端配置：
   "PickupConditions": 1 // 右键拾取条件 0: 右手为空  1: 右手或左手为空  2: 无条件
   "CanAutoCollect": true, // 是否允许自动拾取掉落物
   "CanPlaceBlock": true, // 是否允许在掉落物处放置方块
-  "ShowItemDescription": true, // 显示物品介绍
   "AutoMerge": true, // 掉落物自动合并
   "MergeRange": { // 合并范围
     "X": 1.5, // 水平范围
@@ -40,10 +43,13 @@
 Configuration file: `VintagestoryData/ModConfig/PrecisePickedUp.json`  
 ```
 {
+  // Client Side Config: 
+  "ShowItemDescription": true, // Show item descriptions  
+
+  // Server Side Config: 
   "PickupConditions": 1, // Right-click pickup conditions: 0: Right hand empty, 1: Either hand empty, 2: No conditions  
   "CanAutoCollect": true, // Enable automatic pickup of dropped items  
   "CanPlaceBlock": true, // Allow block placement at dropped item locations  
-  "ShowItemDescription": true, // Show item descriptions  
   "AutoMerge": true, // Enable automatic merging of dropped items  
   "MergeRange": { // Merge range  
     "X": 1.5, // Horizontal range  

@@ -8,7 +8,7 @@ public enum PickupConditionsEnum {
 	None
 }
 
-public struct Config() {
+public record struct Config() {
 	public PickupConditionsEnum PickupConditions { get; set; } = PickupConditionsEnum.LeftOrRightHand;
 	public bool CanAutoCollect { get; set; } = true;
 	public bool CanPlaceBlock { get; set; } = true;

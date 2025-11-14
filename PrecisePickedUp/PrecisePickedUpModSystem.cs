@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
+using System.Text;
 using HarmonyLib;
+using Newtonsoft.Json;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -90,6 +92,36 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 	public override void Start(ICoreAPI? api) {
 		Api = api;
 		LoadConfig();
+		string? configText;
+		switch (api?.Side) {
+			case EnumAppSide.Server:
+				configText = JsonConvert.SerializeObject(Config);
+				api.World.Config.SetBytes("precisepickedup", Encoding.UTF8.GetBytes(configText));
+				api.Logger.Notification("PrecisePickedUp Server Config: {0}", Config);
+				break;
+			case EnumAppSide.Client:
+				var buffer = api.World.Config.GetBytes("precisepickedup");
+				if (buffer is { Length: > 0 }) {
+					try {
+						configText = Encoding.UTF8.GetString(buffer);
+						var config = JsonConvert.DeserializeObject<Config>(configText);
+						Config = Config with {
+								CanAutoCollect = config.CanAutoCollect,
+								CanPlaceBlock = config.CanPlaceBlock,
+								AutoMerge = config.AutoMerge,
+								MergeRange = config.MergeRange,
+								MergeInterval = config.MergeInterval,
+								RangePickup = config.RangePickup,
+								PickupRange = config.PickupRange,
+								PickupConditions = config.PickupConditions
+						};
+					} catch {
+						// ignored
+					}
+				}
+				break;
+		}
+
 		if (EnableOverhaulCompat) {
 			OverhaulCompat.Patch();
 		}
@@ -102,6 +134,8 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 			prefix: ProjectileNonCollectibleGetPreFix);
 		HarmonyInstance.Patch(ProjectileNonCollectibleSet,
 			prefix: ProjectileNonCollectibleSetPreFix);
+		HarmonyInstance.Patch(EntityItemCanCollect,
+			EntityItemCanCollectPreFix);
 	}
 
 	static private void LoadConfig() {
@@ -119,10 +153,7 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 	}
 
 	public override void StartClientSide(ICoreClientAPI api) {
-		GameMainRayTraceForSelectionPatch.api = api;
-
-		HarmonyInstance.Patch(EntityItemCanCollect,
-			EntityItemCanCollectPreFix);
+		api.Logger.Notification("PrecisePickedUp Client Config: {0}", Config);
 
 		HarmonyInstance.Patch(GameMainRayTraceForSelection,
 			GameMainRayTraceForSelectionPreFix);

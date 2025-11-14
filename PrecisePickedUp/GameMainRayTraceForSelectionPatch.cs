@@ -6,7 +6,6 @@ using Vintagestory.GameContent;
 namespace PrecisePickedUp;
 
 public class GameMainRayTraceForSelectionPatch {
-	public static ICoreAPI api;
 
 	[HarmonyPriority(Priority.First)]
 	public static void PreFix(ref EntityFilter efilter) {
