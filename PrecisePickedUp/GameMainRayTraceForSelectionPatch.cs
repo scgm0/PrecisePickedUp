@@ -15,12 +15,10 @@ public class GameMainRayTraceForSelectionPatch {
 			return;
 		}
 
-		if (supplier is ClientMain clientMain) {
-			var api = clientMain.Api;
-			if (clientMain.MouseStateRaw.Left) {
-				return;
-			}
+		if (supplier is ClientMain { MouseStateRaw.Left: true }) {
+			return;
 		}
+
 		var oldFilter = efilter;
 		efilter = e => e is EntityItem or EntityProjectile { NonCollectible: false } ||
 			PrecisePickedUpModSystem.EnableOverhaulCompat && OverhaulCompat.RayTraceForSelection(e) ||
