@@ -64,16 +64,16 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 		AccessTools.Method(typeof(EntityItemRendererPatch), nameof(EntityItemRendererPatch.DoRender3DOpaquePreFix));
 
 	public static readonly MethodInfo ProjectileNonCollectibleGet =
-		AccessTools.PropertyGetter(typeof(EntityProjectile), nameof(EntityProjectile.NonCollectible));
+		AccessTools.PropertyGetter(typeof(EntityProjectileBase), nameof(EntityProjectile.Collectible));
 
-	public static readonly MethodInfo ProjectileNonCollectibleGetPreFix =
-		AccessTools.Method(typeof(ProjectileNonCollectiblePatch), nameof(ProjectileNonCollectiblePatch.GetPreFix));
+	public static readonly MethodInfo ProjectileCollectibleGetPreFix =
+		AccessTools.Method(typeof(ProjectileCollectiblePatch), nameof(ProjectileCollectiblePatch.GetPreFix));
 
-	public static readonly MethodInfo ProjectileNonCollectibleSet =
-		AccessTools.PropertySetter(typeof(EntityProjectile), nameof(EntityProjectile.NonCollectible));
+	public static readonly MethodInfo ProjectileCollectibleSet =
+		AccessTools.PropertySetter(typeof(EntityProjectileBase), nameof(EntityProjectile.Collectible));
 
 	public static readonly MethodInfo ProjectileNonCollectibleSetPreFix =
-		AccessTools.Method(typeof(ProjectileNonCollectiblePatch), nameof(ProjectileNonCollectiblePatch.SetPreFix));
+		AccessTools.Method(typeof(ProjectileCollectiblePatch), nameof(ProjectileCollectiblePatch.SetPreFix));
 
 	public string HarmonyId => Mod.Info.ModID;
 
@@ -106,19 +106,20 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 						configText = Encoding.UTF8.GetString(buffer);
 						var config = JsonConvert.DeserializeObject<Config>(configText);
 						Config = Config with {
-								CanAutoCollect = config.CanAutoCollect,
-								CanPlaceBlock = config.CanPlaceBlock,
-								AutoMerge = config.AutoMerge,
-								MergeRange = config.MergeRange,
-								MergeInterval = config.MergeInterval,
-								RangePickup = config.RangePickup,
-								PickupRange = config.PickupRange,
-								PickupConditions = config.PickupConditions
+							CanAutoCollect = config.CanAutoCollect,
+							CanPlaceBlock = config.CanPlaceBlock,
+							AutoMerge = config.AutoMerge,
+							MergeRange = config.MergeRange,
+							MergeInterval = config.MergeInterval,
+							RangePickup = config.RangePickup,
+							PickupRange = config.PickupRange,
+							PickupConditions = config.PickupConditions
 						};
 					} catch {
 						// ignored
 					}
 				}
+
 				break;
 		}
 
@@ -131,8 +132,8 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 		HarmonyInstance.Patch(EntityProjectileInitialize,
 			postfix: EntityProjectileInitializePosFix);
 		HarmonyInstance.Patch(ProjectileNonCollectibleGet,
-			prefix: ProjectileNonCollectibleGetPreFix);
-		HarmonyInstance.Patch(ProjectileNonCollectibleSet,
+			prefix: ProjectileCollectibleGetPreFix);
+		HarmonyInstance.Patch(ProjectileCollectibleSet,
 			prefix: ProjectileNonCollectibleSetPreFix);
 		HarmonyInstance.Patch(EntityItemCanCollect,
 			EntityItemCanCollectPreFix);
@@ -197,9 +198,9 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 			DoRender3DOpaquePreFix);
 
 		HarmonyInstance.Unpatch(ProjectileNonCollectibleGet,
-			ProjectileNonCollectibleGetPreFix);
+			ProjectileCollectibleGetPreFix);
 
-		HarmonyInstance.Unpatch(ProjectileNonCollectibleSet,
+		HarmonyInstance.Unpatch(ProjectileCollectibleSet,
 			ProjectileNonCollectibleSetPreFix);
 	}
 }

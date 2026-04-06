@@ -43,7 +43,7 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 			return;
 		}
 
-		foreach (var entity1 in item.Api.World.GetEntitiesAround(item.SidedPos.XYZ,
+		foreach (var entity1 in item.Api.World.GetEntitiesAround(item.Pos.XYZ,
 			PrecisePickedUpModSystem.Config.MergeRange.X,
 			PrecisePickedUpModSystem.Config.MergeRange.Y,
 			e => e is EntityItem {

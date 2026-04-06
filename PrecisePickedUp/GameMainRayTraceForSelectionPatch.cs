@@ -1,4 +1,3 @@
-using System;
 using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -20,7 +19,7 @@ public class GameMainRayTraceForSelectionPatch {
 		}
 
 		var oldFilter = efilter;
-		efilter = e => e is EntityItem or EntityProjectile { NonCollectible: false } ||
+		efilter = e => e is EntityItem or EntityProjectile { Collectible: true } ||
 			PrecisePickedUpModSystem.EnableOverhaulCompat && OverhaulCompat.RayTraceForSelection(e) ||
 			oldFilter(e);
 	}
