@@ -23,11 +23,11 @@ public static class EntityGetNamePatch {
 
 				__result = size > 1 ? $"{item.Slot.Itemstack.GetName()} ({size}x)" : item.Slot.Itemstack.GetName();
 				return false;
-			case EntityProjectile projectile:
+			case EntityProjectileBase projectile:
 				var stack = projectile.ProjectileStack;
 				if (stack.Item is null) {
-					var item = projectile.Api.World.GetItem(stack.Id);
-					AccessTools.Field(typeof(ItemStack), "item").SetValue(stack, item);
+					ref var item = ref UnsafeAccessorExtensions.GetItemStack_item(stack);
+					item = projectile.Api.World.GetItem(stack.Id);
 				}
 
 				__result = stack.Item!.GetHeldItemName(stack);

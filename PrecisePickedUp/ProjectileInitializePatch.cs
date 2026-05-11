@@ -5,13 +5,12 @@ namespace PrecisePickedUp;
 
 public static class ProjectileInitializePatch {
 	public static void PosFix(Entity __instance) {
-		if (__instance.HasBehavior<EntityProjectileBehavior>()) {
+		if (__instance.HasBehavior<EntityProjectileBaseBehavior>()) {
 			return;
 		}
 
-		if (__instance is EntityProjectile projectile) {
+		if (__instance is EntityProjectileBase projectile) {
 			var stack = projectile.ProjectileStack!;
-			// projectile.Api.Logger.Notification($"ProjectileStack: {stack} {stack.Item} {projectile.Collectible}");
 			if (stack.Item is null) {
 				ref var item = ref UnsafeAccessorExtensions.GetItemStack_item(stack);
 				item = projectile.Api.World.GetItem(stack.Id);
@@ -26,6 +25,6 @@ public static class ProjectileInitializePatch {
 			return;
 		}
 
-		__instance.AddBehavior(new EntityProjectileBehavior(__instance));
+		__instance.AddBehavior(new EntityProjectileBaseBehavior(__instance));
 	}
 }

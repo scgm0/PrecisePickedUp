@@ -10,11 +10,11 @@ using Vintagestory.GameContent;
 
 namespace PrecisePickedUp;
 
-public class EntityProjectileBehavior(Entity entity) : EntityBehavior(entity) {
+public class EntityProjectileBaseBehavior(Entity entity) : EntityBehavior(entity) {
 
 	static private readonly string ActionLangCode = Lang.Get($"precisepickedup:{nameof(EnumDespawnReason.PickedUp)}");
 
-	public override string PropertyName() { return nameof(EntityProjectileBehavior); }
+	public override string PropertyName() { return nameof(EntityProjectileBaseBehavior); }
 
 	public override void OnInteract(
 		EntityAgent byEntity,
@@ -37,7 +37,7 @@ public class EntityProjectileBehavior(Entity entity) : EntityBehavior(entity) {
 			return;
 		}
 
-		var itemStack = entity is EntityProjectile projectile
+		var itemStack = entity is EntityProjectileBase projectile
 			? projectile.ProjectileStack
 			: OverhaulCompat.GetProjectileItemStack(entity);
 		var entities = entity.Api.World.GetEntitiesAround(entity.Pos.XYZ,
@@ -45,7 +45,7 @@ public class EntityProjectileBehavior(Entity entity) : EntityBehavior(entity) {
 			PrecisePickedUpModSystem.Config.PickupRange.Y,
 			e => {
 				ItemStack? i2 = null;
-				if (e is EntityProjectile p2) {
+				if (e is EntityProjectileBase p2) {
 					i2 = p2.ProjectileStack;
 				} else if (PrecisePickedUpModSystem.EnableOverhaulCompat) {
 					i2 = OverhaulCompat.GetProjectileItemStack(e);
@@ -54,7 +54,7 @@ public class EntityProjectileBehavior(Entity entity) : EntityBehavior(entity) {
 				return itemStack is not null && i2 is not null && itemStack.Equals(entity.World, i2);
 			});
 		foreach (var entity1 in entities) {
-			entity1.GetBehavior<EntityProjectileBehavior>()?.OnCollideWithPlayer(player);
+			entity1.GetBehavior<EntityProjectileBaseBehavior>()?.OnCollideWithPlayer(player);
 		}
 	}
 
@@ -86,7 +86,7 @@ public class EntityProjectileBehavior(Entity entity) : EntityBehavior(entity) {
 			OverhaulCompat.GetInfoText(entity, infotext);
 		}
 
-		if (entity is not EntityProjectile projectile) {
+		if (entity is not EntityProjectileBase projectile) {
 			return;
 		}
 

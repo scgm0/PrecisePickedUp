@@ -19,7 +19,7 @@ public class GameMainRayTraceForSelectionPatch {
 		}
 
 		var oldFilter = efilter;
-		efilter = e => e is EntityItem or EntityProjectile { Collectible: true } ||
+		efilter = e => e is EntityItem or EntityProjectileBase { Collectible: true } ||
 			PrecisePickedUpModSystem.EnableOverhaulCompat && OverhaulCompat.RayTraceForSelection(e) ||
 			oldFilter(e);
 	}

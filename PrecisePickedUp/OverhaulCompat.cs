@@ -14,12 +14,12 @@ public static class OverhaulCompat {
 
 	public static void Patch() {
 		PrecisePickedUpModSystem.Instance?.HarmonyInstance.Patch(ProjectileEntityInitialize,
-			postfix: PrecisePickedUpModSystem.EntityProjectileInitializePosFix);
+			postfix: PrecisePickedUpModSystem.EntityProjectileBaseInitializePosFix);
 	}
 
 	public static void Unpatch() {
 		PrecisePickedUpModSystem.Instance?.HarmonyInstance.Unpatch(ProjectileEntityInitialize,
-			PrecisePickedUpModSystem.EntityProjectileInitializePosFix);
+			PrecisePickedUpModSystem.EntityProjectileBaseInitializePosFix);
 	}
 
 	public static bool EntityGetName(Entity entity, ref string s) {

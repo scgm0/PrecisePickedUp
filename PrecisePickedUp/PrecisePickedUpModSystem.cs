@@ -51,10 +51,10 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 	public static readonly MethodInfo EntityItemInitializePosFix =
 		AccessTools.Method(typeof(EntityItemInitializePatch), "PosFix");
 
-	public static readonly MethodInfo EntityProjectileInitialize =
-		AccessTools.Method(typeof(EntityProjectile), nameof(EntityProjectile.Initialize));
+	public static readonly MethodInfo EntityProjectileBaseInitialize =
+		AccessTools.Method(typeof(EntityProjectileBase), nameof(EntityProjectileBase.Initialize));
 
-	public static readonly MethodInfo EntityProjectileInitializePosFix =
+	public static readonly MethodInfo EntityProjectileBaseInitializePosFix =
 		AccessTools.Method(typeof(ProjectileInitializePatch), "PosFix");
 
 	public static readonly MethodInfo DoRender3DOpaque =
@@ -64,13 +64,13 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 		AccessTools.Method(typeof(EntityItemRendererPatch), nameof(EntityItemRendererPatch.DoRender3DOpaquePreFix));
 
 	public static readonly MethodInfo ProjectileNonCollectibleGet =
-		AccessTools.PropertyGetter(typeof(EntityProjectileBase), nameof(EntityProjectile.Collectible));
+		AccessTools.PropertyGetter(typeof(EntityProjectileBase), nameof(EntityProjectileBase.Collectible));
 
 	public static readonly MethodInfo ProjectileCollectibleGetPreFix =
 		AccessTools.Method(typeof(ProjectileCollectiblePatch), nameof(ProjectileCollectiblePatch.GetPreFix));
 
 	public static readonly MethodInfo ProjectileCollectibleSet =
-		AccessTools.PropertySetter(typeof(EntityProjectileBase), nameof(EntityProjectile.Collectible));
+		AccessTools.PropertySetter(typeof(EntityProjectileBase), nameof(EntityProjectileBase.Collectible));
 
 	public static readonly MethodInfo ProjectileNonCollectibleSetPreFix =
 		AccessTools.Method(typeof(ProjectileCollectiblePatch), nameof(ProjectileCollectiblePatch.SetPreFix));
@@ -129,8 +129,8 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 
 		HarmonyInstance.Patch(EntityItemInitialize,
 			postfix: EntityItemInitializePosFix);
-		HarmonyInstance.Patch(EntityProjectileInitialize,
-			postfix: EntityProjectileInitializePosFix);
+		HarmonyInstance.Patch(EntityProjectileBaseInitialize,
+			postfix: EntityProjectileBaseInitializePosFix);
 		HarmonyInstance.Patch(ProjectileNonCollectibleGet,
 			prefix: ProjectileCollectibleGetPreFix);
 		HarmonyInstance.Patch(ProjectileCollectibleSet,
@@ -179,8 +179,8 @@ public sealed class PrecisePickedUpModSystem : ModSystem {
 		HarmonyInstance.Unpatch(EntityItemInitialize,
 			EntityItemInitializePosFix);
 
-		HarmonyInstance.Unpatch(EntityProjectileInitialize,
-			EntityProjectileInitializePosFix);
+		HarmonyInstance.Unpatch(EntityProjectileBaseInitialize,
+			EntityProjectileBaseInitializePosFix);
 
 		HarmonyInstance.Unpatch(EntityItemCanCollect,
 			EntityItemCanCollectPreFix);
