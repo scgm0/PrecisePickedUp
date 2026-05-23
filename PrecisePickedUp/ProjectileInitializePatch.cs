@@ -10,8 +10,8 @@ public static class ProjectileInitializePatch {
 		}
 
 		if (__instance is EntityProjectileBase projectile) {
-			var stack = projectile.ProjectileStack!;
-			if (stack.Item is null) {
+			var stack = projectile.ProjectileStack;
+			if (stack is { Item: null }) {
 				ref var item = ref UnsafeAccessorExtensions.GetItemStack_item(stack);
 				item = projectile.Api.World.GetItem(stack.Id);
 			}
