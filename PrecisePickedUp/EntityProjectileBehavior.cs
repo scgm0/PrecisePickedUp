@@ -44,6 +44,10 @@ public class EntityProjectileBaseBehavior(Entity entity) : EntityBehavior(entity
 			PrecisePickedUpModSystem.Config.PickupRange.X,
 			PrecisePickedUpModSystem.Config.PickupRange.Y,
 			e => {
+				if (e == entity) {
+					return false;
+				}
+
 				ItemStack? i2 = null;
 				if (e is EntityProjectileBase p2) {
 					i2 = p2.ProjectileStack;
@@ -51,7 +55,8 @@ public class EntityProjectileBaseBehavior(Entity entity) : EntityBehavior(entity
 					i2 = OverhaulCompat.GetProjectileItemStack(e);
 				}
 
-				return itemStack is not null && i2 is not null && itemStack.Equals(entity.World, i2);
+				return itemStack is not null && i2 is not null &&
+					itemStack.Equals(entity.World, i2, GlobalConstants.IgnoredStackAttributes);
 			});
 		foreach (var entity1 in entities) {
 			entity1.GetBehavior<EntityProjectileBaseBehavior>()?.OnCollideWithPlayer(player);

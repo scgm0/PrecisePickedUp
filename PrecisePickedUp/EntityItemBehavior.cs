@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -47,11 +48,13 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 		var entities = entityItem.Api.World.GetEntitiesAround(entityItem.Pos.XYZ,
 			PrecisePickedUpModSystem.Config.MergeRange.X,
 			PrecisePickedUpModSystem.Config.MergeRange.Y,
-			e => e is EntityItem {
+			e => e != entity && e is EntityItem {
 					Slot: {
 						Itemstack: { } itemStack
 					} slot
-				} && e != entityItem && itemStack.Equals(entityItem.Api.World, entityItem.Slot.Itemstack) &&
+				} && e != entityItem && itemStack.Equals(entityItem.Api.World,
+					entityItem.Slot.Itemstack,
+					GlobalConstants.IgnoredStackAttributes) &&
 				slot.StackSize <= entityItem.Slot.StackSize);
 
 		foreach (var entity1 in entities) {
@@ -97,15 +100,17 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 		var entities = entity.Api.World.GetEntitiesAround(entity.Pos.XYZ,
 			PrecisePickedUpModSystem.Config.PickupRange.X,
 			PrecisePickedUpModSystem.Config.PickupRange.Y,
-			e => e is EntityItem entityItem && itemStack.Equals(entity.World, entityItem.Slot.Itemstack));
+			e => e != entity && e is EntityItem entityItem && itemStack.Equals(entity.World,
+				entityItem.Slot.Itemstack,
+				GlobalConstants.IgnoredStackAttributes));
 		foreach (var entity1 in entities) {
 			entity1.GetBehavior<EntityItemBehavior>()?.OnCollideWithPlayer(player);
 		}
 	}
 
 	public void OnCollideWithPlayer(EntityPlayer player) {
-		var collect = (EntityBehaviorCollectEntities)player.GetBehavior("collectitems")!;
-		collect.OnFoundCollectible(entity);
+		var collect = player.GetBehavior("collectitems") as EntityBehaviorCollectEntities;
+		collect?.OnFoundCollectible(entity);
 		var item = (EntityItem)entity;
 		if (item.Slot.Itemstack is not { StackSize: > 0 }) {
 			item.WatchedAttributes.SetInt("stackCount", 0);
