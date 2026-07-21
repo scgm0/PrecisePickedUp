@@ -25,12 +25,19 @@ public static class EntityGetNamePatch {
 				return false;
 			case EntityProjectileBase projectile:
 				var stack = projectile.ProjectileStack;
+				if (stack is null) {
+					return false;
+				}
+
 				if (stack.Item is null) {
 					ref var item = ref UnsafeAccessorExtensions.GetItemStack_item(stack);
 					item = projectile.Api.World.GetItem(stack.Id);
 				}
 
-				__result = stack.Item!.GetHeldItemName(stack);
+				if (stack.Item is not null) {
+					__result = stack.Item.GetHeldItemName(stack);
+				}
+
 				return false;
 			default: return true;
 		}
