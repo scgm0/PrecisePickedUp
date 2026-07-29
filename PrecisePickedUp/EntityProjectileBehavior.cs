@@ -26,7 +26,7 @@ public class EntityProjectileBaseBehavior(Entity entity) : EntityBehavior(entity
 			PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.OnlyRightHand &&
 			player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null ||
 			PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.LeftOrRightHand &&
-			player.Player.InventoryManager.GetHotbarItemstack(10) is not null &&
+			player.Player.InventoryManager.OffhandHotbarSlot?.Itemstack is not null &&
 			player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null) {
 			return;
 		}
@@ -95,7 +95,7 @@ public class EntityProjectileBaseBehavior(Entity entity) : EntityBehavior(entity
 			return;
 		}
 
-		var stack = projectile.ProjectileStack!;
-		stack.Item.GetHeldItemInfo(new DummySlot(stack), infotext, entity.Api.World, ClientSettings.ExtendedDebugInfo);
+		var stack = projectile.ProjectileStack;
+		stack?.Collectible.GetHeldItemInfo(new DummySlot(stack), infotext, entity.Api.World, ClientSettings.ExtendedDebugInfo);
 	}
 }

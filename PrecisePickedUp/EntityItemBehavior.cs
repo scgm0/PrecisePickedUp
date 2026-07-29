@@ -85,7 +85,7 @@ public sealed class EntityItemBehavior(Entity entity) : EntityBehavior(entity) {
 			PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.OnlyRightHand &&
 			player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null ||
 			PrecisePickedUpModSystem.Config.PickupConditions == PickupConditionsEnum.LeftOrRightHand &&
-			player.Player.InventoryManager.GetHotbarItemstack(10) is not null &&
+			player.Player.InventoryManager.OffhandHotbarSlot?.Itemstack is not null &&
 			player.Player.InventoryManager.ActiveHotbarSlot?.Itemstack is not null) {
 			return;
 		}

@@ -27,13 +27,23 @@ public static class OverhaulCompat {
 			return false;
 		}
 
-		var stack = projectile.ProjectileStack!;
-		if (stack.Item is null) {
-			ref var item = ref UnsafeAccessorExtensions.GetItemStack_item(stack);
-			item = entity.Api.World.GetItem(stack.Id);
+		var stack = projectile.ProjectileStack;
+
+		if (stack is null) {
+			return false;
 		}
 
-		s = stack.Item!.GetHeldItemName(stack);
+		if (stack is { Class: EnumItemClass.Item, Item: null }) {
+			ref var item = ref UnsafeAccessorExtensions.GetItemStack_item(stack);
+			item = projectile.Api.World.GetItem(stack.Id);
+		}
+
+		if (stack is { Class: EnumItemClass.Block, Block: null }) {
+			ref var block = ref UnsafeAccessorExtensions.GetItemStack_block(stack);
+			block = projectile.Api.World.GetBlock(stack.Id);
+		}
+
+		s = stack.Collectible.GetHeldItemName(stack);
 
 		return true;
 	}
@@ -43,13 +53,22 @@ public static class OverhaulCompat {
 			return;
 		}
 
-		var stack = projectile.ProjectileStack!;
-		if (stack.Item is null) {
-			ref var item = ref UnsafeAccessorExtensions.GetItemStack_item(stack);
-			item = entity.Api.World.GetItem(stack.Id);
+		var stack = projectile.ProjectileStack;
+		if (stack is null) {
+			return;
 		}
 
-		stack.Item!.GetHeldItemInfo(new DummySlot(stack), infotext, entity.Api.World, ClientSettings.ExtendedDebugInfo);
+		if (stack is { Class: EnumItemClass.Item, Item: null }) {
+			ref var item = ref UnsafeAccessorExtensions.GetItemStack_item(stack);
+			item = projectile.Api.World.GetItem(stack.Id);
+		}
+
+		if (stack is { Class: EnumItemClass.Block, Block: null }) {
+			ref var block = ref UnsafeAccessorExtensions.GetItemStack_block(stack);
+			block = projectile.Api.World.GetBlock(stack.Id);
+		}
+
+		stack.Collectible.GetHeldItemInfo(new DummySlot(stack), infotext, entity.Api.World, ClientSettings.ExtendedDebugInfo);
 	}
 
 	public static bool RayTraceForSelection(Entity entity) { return entity is ProjectileEntity { CanBeCollected: true }; }
@@ -59,19 +78,28 @@ public static class OverhaulCompat {
 	}
 
 	public static bool NotCollect(Entity entity) {
-		if (entity is not ProjectileEntity projectileEntity) {
+		if (entity is not ProjectileEntity projectile) {
 			return false;
 		}
 
-		var stack = projectileEntity.ProjectileStack!;
-		if (stack.Item is null) {
-			ref var item = ref UnsafeAccessorExtensions.GetItemStack_item(stack);
-			item = entity.Api.World.GetItem(stack.Id);
+		var stack = projectile.ProjectileStack;
+		if (stack is null) {
+			return false;
 		}
 
-		var stats = stack.Item!.GetCollectibleBehavior<ProjectileBehavior>(true).GetStats(stack);
-		projectileEntity.CanBeCollected = stats.CanBeCollected;
+		if (stack is { Class: EnumItemClass.Item, Item: null }) {
+			ref var item = ref UnsafeAccessorExtensions.GetItemStack_item(stack);
+			item = projectile.Api.World.GetItem(stack.Id);
+		}
 
-		return !projectileEntity.CanBeCollected;
+		if (stack is { Class: EnumItemClass.Block, Block: null }) {
+			ref var block = ref UnsafeAccessorExtensions.GetItemStack_block(stack);
+			block = projectile.Api.World.GetBlock(stack.Id);
+		}
+
+		var stats = stack.Collectible.GetCollectibleBehavior<ProjectileBehavior>(true).GetStats(stack);
+		projectile.CanBeCollected = stats.CanBeCollected;
+
+		return !projectile.CanBeCollected;
 	}
 }
